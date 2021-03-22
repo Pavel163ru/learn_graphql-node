@@ -14,19 +14,21 @@ const resolvers = {
   Query: {
     info: () => `This is the API of a Hackernews Clone`,
     // 2
-    feed: () => links,
+    feed: async (parent, args, context) => {
+      return context.prisma.link.findMany();
+    },
     link: (parent, args) => links.find(link => link.id == args.id),
   },
   Mutation: {
     // 2
-    post: (parent, args) => {
-      const link = {
-        id: `link-${idCount++}`,
-        description: args.description,
-        url: args.url,
-      }
-      links.push(link)
-      return link
+    post: (parent, args, context, info) => {
+      const newLink = context.prisma.link.create({
+        data: {
+          url: args.url,
+          description: args.description,
+        },
+      })
+      return newLink
     },
     updateLink: (parent, args) => {
       const link = links.find(link => link.id == args.id);
